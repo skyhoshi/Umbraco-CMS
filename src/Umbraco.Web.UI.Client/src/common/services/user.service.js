@@ -265,8 +265,6 @@ angular.module('umbraco.services')
 
             /** Loads the Moment.js Locale for the current user. */
             loadMomentLocaleForCurrentUser: function () {
-                
-
 
                 function loadLocales(currentUser, supportedLocales) {
                     var locale = currentUser.locale.toLowerCase();
@@ -281,7 +279,7 @@ angular.module('umbraco.services')
                                 localeUrls.push('lib/moment/' + majorLocale);
                             }
                         }
-                        return assetsService.load(localeUrls);
+                        return assetsService.load(localeUrls, $rootScope);
                     }
                     else {
                         //return a noop promise
