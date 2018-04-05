@@ -260,7 +260,35 @@ angular.module('umbraco.services')
                 eventsService.emit("app.authenticated", result);
               }
 
-              setCurrentUser(data);
+                return deferred.promise;
+            },
+
+            /** Loads the Moment.js Locale for the current user. */
+            loadMomentLocaleForCurrentUser: function () {
+
+                function loadLocales(currentUser, supportedLocales) {
+                    var locale = currentUser.locale.toLowerCase();
+                    if (locale !== 'en-us') {
+                        var localeUrls = [];
+                        if (supportedLocales.indexOf(locale + '.js') > -1) {
+                            localeUrls.push('lib/moment/' + locale + '.js');
+                        }
+                        if (locale.indexOf('-') > -1) {
+                            var majorLocale = locale.split('-')[0] + '.js';
+                            if (supportedLocales.indexOf(majorLocale) > -1) {
+                                localeUrls.push('lib/moment/' + majorLocale);
+                            }
+                        }
+                        return assetsService.load(localeUrls, $rootScope);
+                    }
+                    else {
+                        //return a noop promise
+                        var deferred = $q.defer();
+                        var promise = deferred.promise;
+                        deferred.resolve(true);
+                        return promise;
+                    }
+                }
 
               deferred.resolve(currentUser);
             }, function () {
@@ -268,10 +296,11 @@ angular.module('umbraco.services')
               deferred.reject();
             });
 
-        }
-        else {
-          deferred.resolve(currentUser);
-        }
+                return $q.all(promises).then(function (values) {
+                    return loadLocales(values.currentUser, values.supportedLocales);
+                });
+                
+                
 
         return deferred.promise;
       },
